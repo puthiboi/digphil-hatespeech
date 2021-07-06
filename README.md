@@ -9,7 +9,7 @@ https://developer.twitter.com/en/portal/dashboard
 Create a new app. The contents of name and description can be set to arbitrary values.
 When you are finished you will see the consumer key, cosumer secret, access token and access token secret.
 
-Insert them in the twitterscrape.py file.
+Create the file `./src/credentials.py` with the following contents:
 ```
 consumer_key = ''
 consumer_secret = ''
