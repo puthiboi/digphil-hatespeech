@@ -10,11 +10,11 @@ from sklearn.feature_extraction.text import TfidfTransformer
 
 
 
-# Load & Filter dataset
+### Load & Filter dataset
 df = pd.read_csv("labeled_data.csv")
 df_selected = df.drop(['Unnamed: 0','count', "offensive_language", "neither", 'class'], axis=1)
 
-#convert remaining data to array (readable form for machine learning)
+### convert remaining data to machine learning readable form
 hate_speech = np.asarray(df_selected.hate_speech)
 tweets = np.asarray(df_selected.tweet)
 
@@ -26,13 +26,13 @@ tfidf_transformer = TfidfTransformer()
 tweets_tfidf = tfidf_transformer.fit_transform(X_train_counts)
 tweets_tfidf.shape
 
-# split the data
+### split the data
 tweets_tfidf_train, tweets_tfidf_test, hate_speech_train, hate_speech_test = train_test_split(
     tweets_tfidf, hate_speech, 
     test_size=0.20, random_state=42)
 
 
-# train the classifier using the training data
+### train the classifier using the training data
 
 #clf = MultinomialNB()
 #clf.fit(tweets_tfidf_train, hate_speech_train)
@@ -40,6 +40,6 @@ tweets_tfidf_train, tweets_tfidf_test, hate_speech_train, hate_speech_test = tra
 clf = RandomForestClassifier()
 clf.fit(tweets_tfidf_train, hate_speech_train)
 
-# compute accuracy using test data
+### compute accuracy using test data
 acc_test = clf.score(tweets_tfidf_test, hate_speech_test)
 print ("Test Accuracy:", acc_test)
