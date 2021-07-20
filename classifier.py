@@ -20,20 +20,20 @@ no_of_trees = 240 #number of trees in the forest of the random forest classifier
 adaboost = False #use adaboost in this run?
 no_est_ada = 100 #number of weak estimators used for adaboost
 
-baggingclf = True
+baggingclf = False
 no_est_bag = 100
 
-extratrees = True #extra trees classifier, higher bias but lower variance than random forest
+extratrees = False #extra trees classifier, higher bias but lower variance than random forest
 no_est_ext = 100
 
-histgradboost = True
+histgradboost = False #findet er irgendwie nicht im  modul
 no_est_hgb = 100
 
-gradboostclf = True
+gradboostclf = True #gradient boosting classifier
 no_est_grb = 100
 
 stackingclf = True
-no_est_sta = 100
+#no_est_sta = 100 not possible for stacking clf
 
 print("loadfilter")
 ### Load & Filter dataset
@@ -129,7 +129,7 @@ if gradboostclf == True:
     print("Test Accuracy:", acc_test)
 
 if stackingclf == True:
-    print(f"training Stacking Classifier with {no_est_sta} estimators")
+    print(f"training Stacking Classifier")
     clf = ens.StackingClassifier(n_estimators=no_est_sta,n_jobs=cores)  # , n_jobs=cores)
     clf.fit(tweets_tfidf_train, hate_speech_train)
 
