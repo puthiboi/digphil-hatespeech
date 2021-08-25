@@ -8,6 +8,8 @@ import sklearn.ensemble as ens
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+import re
 #from sklearn.naive_bayes import MultinomialNB
 
 
@@ -16,24 +18,16 @@ cores = 3 # how many cpu cores one wants to use (for most classifiers)
 randforclf = False ##use the random forest classifier in this run?
 no_of_trees = 240 #number of trees in the forest of the random forest classifier
 
+adaboost = True #use adaboost in this run?
+no_est_ada = 140 #number of weak estimators used for adaboost
 
-adaboost = False #use adaboost in this run?
-no_est_ada = 100 #number of weak estimators used for adaboost
+gradboostclf = False
+no_est_grb = 200
 
-baggingclf = False
-no_est_bag = 100
+dropBots = True ## whether bots should be filtered out or not
 
-extratrees = False #extra trees classifier, higher bias but lower variance than random forest
-no_est_ext = 100
-
-histgradboost = False #findet er irgendwie nicht im  modul
-no_est_hgb = 100
-
-gradboostclf = True #gradient boosting classifier
-no_est_grb = 100
-
-stackingclf = True
-#no_est_sta = 100 not possible for stacking clf
+#stackingclf = False
+#no_est_sta = 100
 
 print("loadfilter")
 ### Load & Filter dataset
@@ -42,80 +36,54 @@ df_selected = df.drop(['Unnamed: 0','count', "offensive_language", "neither", 'c
 
 print("convert")
 ### convert remaining data to machine learning readable form
-hate_speech = np.asarray(df_selected.hate_speech)
-tweets = np.asarray(df_selected.tweet)
 
-print("countvec")
-count_vect = CountVectorizer()
-X_train_counts = count_vect.fit_transform(tweets)
-X_train_counts.shape
+##filtering out non-chars and converting tweets to lowercase
+df_selected["tweet"] = df_selected["tweet"].apply(lambda x: (re.sub("[^a-zA-Z]"," ",x)).lower())
+#print(df_selected["tweet"])
 
-print("tfidftrans")
-tfidf_transformer = TfidfTransformer()
-tweets_tfidf = tfidf_transformer.fit_transform(X_train_counts)
-tweets_tfidf.shape
+
+hate_speech = df_selected.hate_speech
+tweets = df_selected.tweet
+
+#print("countvec")
+#count_vect = CountVectorizer()
+#X_train_counts = count_vect.fit_transform(tweets)
+#X_train_counts.shape
+
+#print("tfidftrans")
+#tfidf_transformer = TfidfTransformer()
+#tweets_tfidf = tfidf_transformer.fit_transform(X_train_counts)
+#tweets_tfidf.shape
 
 print("split")
 ### split the data
 tweets_tfidf_train, tweets_tfidf_test, hate_speech_train, hate_speech_test = train_test_split(
-    tweets_tfidf, hate_speech, 
+    tweets, hate_speech,
     test_size=0.20, random_state=42)
 
+tfVec = TfidfVectorizer(stop_words="english",ngram_range=(1,2),sublinear_tf=True)
+tfVec.fit(tweets_tfidf_train)
 
-### train the classifier using the training data
-
-#clf = MultinomialNB()
-#clf.fit(tweets_tfidf_train, hate_speech_train)
 
 if randforclf == True:
 
     print(f"training Random Forest Classifier with {no_of_trees} estimators")
     clf = RandomForestClassifier(n_estimators=no_of_trees, n_jobs=cores)
-    clf.fit(tweets_tfidf_train, hate_speech_train)
+    clf.fit(tfVec.transform(tweets_tfidf_train), hate_speech_train)
 
     #print("accTest")
 ### compute accuracy using test data
-    acc_test = clf.score(tweets_tfidf_test, hate_speech_test)
+    acc_test = clf.score(tfVec.transform(tweets_tfidf_test), hate_speech_test)
     print ("Test Accuracy:", acc_test)
 
 if adaboost == True:
     print(f"training AdaBoost with {no_est_ada} estimators")
     clf = AdaBoostClassifier(n_estimators=no_est_ada)  # , n_jobs=cores)
-    clf.fit(tweets_tfidf_train, hate_speech_train)
+    clf.fit(tfVec.transform(tweets_tfidf_train), hate_speech_train)
 
     #print("accTest")
     ### compute accuracy using test data
-    acc_test = clf.score(tweets_tfidf_test, hate_speech_test)
-    print("Test Accuracy:", acc_test)
-
-if baggingclf == True:
-    print(f"training Bagging Classifier with {no_est_bag} estimators")
-    clf = ens.BaggingClassifier(n_estimators=no_est_bag,n_jobs=cores)  # , n_jobs=cores)
-    clf.fit(tweets_tfidf_train, hate_speech_train)
-
-    # print("accTest")
-    ### compute accuracy using test data
-    acc_test = clf.score(tweets_tfidf_test, hate_speech_test)
-    print("Test Accuracy:", acc_test)
-
-if extratrees == True:
-    print(f"training extra trees classifier with {no_est_ext} estimators")
-    clf = ens.ExtraTreesClassifier(n_estimators=no_est_ext,n_jobs=cores)  # , n_jobs=cores)
-    clf.fit(tweets_tfidf_train, hate_speech_train)
-
-    # print("accTest")
-    ### compute accuracy using test data
-    acc_test = clf.score(tweets_tfidf_test, hate_speech_test)
-    print("Test Accuracy:", acc_test)
-
-if histgradboost == True:
-    print(f"training HistGradBoostCLF with {no_est_hgb} estimators")
-    clf = ens.HistGradientBoostingClassifier(n_estimators=no_est_hgb)  # , n_jobs=cores)
-    clf.fit(tweets_tfidf_train, hate_speech_train)
-
-    # print("accTest")
-    ### compute accuracy using test data
-    acc_test = clf.score(tweets_tfidf_test, hate_speech_test)
+    acc_test = clf.score(tfVec.transform(tweets_tfidf_test), hate_speech_test)
     print("Test Accuracy:", acc_test)
 
 if gradboostclf == True:
@@ -128,12 +96,31 @@ if gradboostclf == True:
     acc_test = clf.score(tweets_tfidf_test, hate_speech_test)
     print("Test Accuracy:", acc_test)
 
-if stackingclf == True:
-    print(f"training Stacking Classifier")
-    clf = ens.StackingClassifier(n_estimators=no_est_sta,n_jobs=cores)  # , n_jobs=cores)
-    clf.fit(tweets_tfidf_train, hate_speech_train)
+## make a prediction using the last instance of clf
+    #data prep
 
-    # print("accTest")
-    ### compute accuracy using test data
-    acc_test = clf.score(tweets_tfidf_test, hate_speech_test)
-    print("Test Accuracy:", acc_test)
+esc_df = pd.read_csv("eurosong.csv",encoding='utf-8',sep=',',lineterminator='\n')
+soc_df = pd.read_csv("eurosoc.csv",encoding='utf-8',sep=',',lineterminator='\n')
+
+#if dropBots == True:
+ #   print("dropping bots...")
+  #  for i,item in enumerate(esc_df.columns(["Username"])):
+   #     if item == "ESC_bot_":
+    #        esc_df.drop(esc_df[i])
+
+
+esc_df = esc_df.drop(['Datetime',"Username"], axis=1)
+esc_df = esc_df["Text"].apply(lambda x: (re.sub("[^a-zA-Z]"," ",x)).lower())
+
+soc_df = soc_df.drop(["Datetime","Username"],axis = 1)
+soc_df = soc_df["Text"].apply(lambda x: (re.sub("[^a-zA-Z]"," ",x)).lower())
+
+#esc_ar = np.asarray(esc_df.Text)
+#soc_ar = np.asarray(soc_df.Text)
+
+
+    #predict
+
+prediction = clf.predict(soc_df)
+print(prediction)
+
