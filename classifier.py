@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import time
 import sys
+import csv
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.model_selection import train_test_split
@@ -91,10 +92,19 @@ if adaboost == True:
     print ("Training Time: ", end - start)
     
 
+
+### Prediction
 start2 = time.time()    
 
 hate_speech_new_soc = clf.predict(soc)
+print("Prediction_len: ", len(hate_speech_new_soc))
 
 end2 = time.time()
 print ("Prediction Time: ", end2 - start2)
 
+### Save Prediction to csv
+l1 = list(zip(hate_speech_new_soc, text_soc))
+
+with open('my.csv','wt') as out:
+   csv_out=csv.writer(out)
+   csv_out.writerows(l1)
