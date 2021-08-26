@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import time
 import sys
-#import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.model_selection import train_test_split
@@ -30,15 +29,42 @@ df_selected = df.drop(['Unnamed: 0','count', "offensive_language", "neither", 'c
 print("Convert to Array")
 hate_speech = np.asarray(df_selected.hate_speech)
 tweets = np.asarray(df_selected.tweet)
+train_len = len(tweets)
+
+### import prediction data
+try:
+    from predict import text_soc, text_song
+except ModuleNotFoundError:
+    sys.exit('predict.py import sysdoes not exist in src/ folder. '
+             )
+except ImportError as import_error:
+    sys.exit(f'{import_error}\nCheck for spelling.')
+
+###combine training data and prediction data
+combined = np.concatenate((tweets, text_soc))
+combined_len = len(combined)
+
 
 print("Countvec")
 count_vect = CountVectorizer()
-X_train_counts = count_vect.fit_transform(tweets)
+X_train_counts = count_vect.fit_transform(combined)
+
 
 print("TfidfTrans")
 tfidf_transformer = TfidfTransformer()
 tweets_tfidf = tfidf_transformer.fit_transform(X_train_counts)
-print (tweets_tfidf.shape)
+#print (tweets_tfidf.shape)
+
+###split training data and prediction data
+train = tweets_tfidf[0:train_len]
+soc = tweets_tfidf[train_len:]
+
+###check if split was succesful
+print("Train_len: ", train_len)
+print("Train: ", train.shape)
+print("Soc_len: ", combined_len - train_len)
+print("Soc: ", soc.shape)
+
 
 ### train the classifier using the training data
 
@@ -48,7 +74,7 @@ if randforclf == True:
     print(f"Training Random Forest Classifier with {no_of_trees} estimators")
     start = time.time()
     clf = RandomForestClassifier(n_estimators=no_of_trees, n_jobs=cores)
-    clf.fit(tweets_tfidf, hate_speech)
+    clf.fit(train, hate_speech)
 
     end = time.time()
     print ("Training Time: ", end - start)
@@ -59,24 +85,16 @@ if adaboost == True:
     start = time.time()
     print(f"training AdaBoost with {no_est_ada} estimators")
     clf = AdaBoostClassifier(n_estimators=no_est_ada)  # , n_jobs=cores)
-    clf.fit(tweets_tfidf, hate_speech)
+    clf.fit(train, hate_speech)
 
     end = time.time()
     print ("Training Time: ", end - start)
     
-start2 = time.time()    
-try:
-    from predict import tweets_tfidf_song, tweets_tfidf_soc
-except ModuleNotFoundError:
-    sys.exit('predict.py import sysdoes not exist in src/ folder. '
-             )
-except ImportError as import_error:
-    sys.exit(f'{import_error}\nCheck for spelling.')
 
-hate_speech_new_soc = clf.predict(tweets_tfidf_soc)
+start2 = time.time()    
+
+hate_speech_new_soc = clf.predict(soc)
 
 end2 = time.time()
 print ("Prediction Time: ", end2 - start2)
 
-#for i in range(len(tweets_tfidf_soc)):
-#    print("X=%s, Predicted=%s" % (tweets_tfidf_soc[i], hate_speech_new_soc[i]))
