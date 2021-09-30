@@ -7,8 +7,8 @@ tweets_list2 = []
 
 ###European Soccer Championship 2021
 # Using TwitterSearchScraper to scrape data and append tweets to list
-for i,tweet in enumerate(sntwitter.TwitterSearchScraper('#euro2021 lang:en since:2021-06-11').get_items()):
-    if i>100000:
+for i,tweet in enumerate(sntwitter.TwitterSearchScraper('#euro2021 lang:en since:2021-06-11 until:2021-07-12').get_items()):
+    if i>10000000:
         break
     tweets_list1.append([tweet.date, tweet.content, tweet.user.username])
     
@@ -21,8 +21,8 @@ tweets_df.to_csv ('eurosoc.csv', index = False, header=True)
 
 ###Eurovision Song Contest 2021
 # Using TwitterSearchScraper to scrape data and append tweets to list
-for i,tweet in enumerate(sntwitter.TwitterSearchScraper('#eurovision lang:en since:2021-05-18').get_items()):
-    if i>100000:
+for i,tweet in enumerate(sntwitter.TwitterSearchScraper('#eurovision lang:en since:2021-05-18 until:2021-05-23').get_items()):
+    if i>10000000:
         break
     tweets_list2.append([tweet.date, tweet.content, tweet.user.username])
     
