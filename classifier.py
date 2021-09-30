@@ -119,7 +119,7 @@ train_dynGen = dfdynGen.text #clean(dfdynGen.text)
 dfdynFunc = (lambda x: True if x == 'hate' else False)
 
 ##old training dataset
-df = pd.read_csv("../input/hate-speech-and-offensive-language-dataset/labeled_data.csv")
+df = pd.read_csv("labeled_data.csv")
 df_selected = df.drop(['Unnamed: 0','count', "neither", 'class'], axis=1)
 df_selected = df_selected.fillna(' ')
 train_tweet = df_selected.tweet # clean(df_selected.tweet)
