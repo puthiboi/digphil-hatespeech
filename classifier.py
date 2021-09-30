@@ -128,14 +128,14 @@ df_orig_func = (lambda x: True if x > 0 else False)
 ######################load, filter prediction/target corpus ############################
 print("Loading prediction data")
 ###eurosoc
-df_soc = pd.read_csv('../input/eurosocsong/eurosoc.csv',
+df_soc = pd.read_csv('eurosoc.csv',
                     lineterminator='\n')
 df_soc_selected = df_soc.drop(['Datetime','Username'], axis=1)
 df_soc_selected = df_soc_selected.fillna(' ')
 df_soc_text= df_soc_selected.Text #np.asarray(clean(df_soc_selected.Text))
 
 ###eurosong
-df_song = pd.read_csv('../input/eurosocsong/eurosong.csv',
+df_song = pd.read_csv('eurosong.csv',
                     lineterminator='\n')
 df_song_selected = df_song.drop(['Datetime','Username'], axis=1)
 df_song_text= df_song_selected.Text #np.asarray(clean(df_song_selected.Text))
