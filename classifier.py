@@ -113,7 +113,7 @@ def hate_offlang_predict(X_train,y_train,soc,song,hate_or_offlang, labelFunc, cl
 print("Load Training Dataset, Clean & Filter")
 
 ##new training dataset
-dfdynGen = pd.read_csv("../input/dynamically-generated-hate-speech-dataset/2020-12-31-DynamicallyGeneratedHateDataset-entries-v0.1.csv")
+dfdynGen = pd.read_csv("2020-12-31-DynamicallyGeneratedHateDataset-entries-v0.1.csv")
 #print(dfdynGen)
 train_dynGen = dfdynGen.text #clean(dfdynGen.text)
 dfdynFunc = (lambda x: True if x == 'hate' else False)
